@@ -5,33 +5,68 @@ const fs = require('fs')
 const { exec } = require('child_process');
 // const { objToGlb, objToGltf } = require('../functions/objToGltf');
 
-const convertFBXToGLTF = async (req,res) =>{
+const convertFBXToGLB = async (req, res) => {
     try {
-        console.log(req.files.fbxFile)
-        console.log('Inside a converter')
-           // Write the file content to a temporary file
-        const tempFilePath = './temp.fbx';
-        fs.writeFileSync(tempFilePath, req.files.fbxFile.data);
-        // await toGltf(req.files.fbxFile)
-        const uint8Array = new Uint8Array(req.files.fbxFile.data);
-        let file
-        convert(uint8Array,'asg.glb', ['-d', '--khr-materials-unlit']).then(
-            d=>{
-                console.log({d})
-                file = d
-            },
-            e=>{
-                console.error(e)
-            }
-        )
-        // fs.writeFile('test.glb', gldFile) 
-        // console.log({gldFile})
-        return res.status(200).json({file: 'asg.glb'})
+      if (!req.files || !req.files.fbxFile) {
+        res.status(400).send('FBX file is missing');
+        return;
+      }
+  
+      console.log('Inside a converter');
+      let conversionFilePath
+      // Write the file content to a temporary file
+      const tempFilePath = `./temp_${new Date()}.fbx`;
+      req.files.fbxFile.mv(tempFilePath, (err) => {
+        if (err) {
+          console.error('Error writing file:', err);
+          res.status(500).send('Failed to write file');
+          return;
+        }
+        if(req.body.to === 'glb' || req.body.to === 'GLB'){
+            conversionFilePath = `./asg_${new Date()}.glb`
+        }
+        if(req.body.to === 'gltf' || req.body.to === 'GLTF'){
+            conversionFilePath = `./asg_${new Date()}.gltf`
+        }
+        // Convert the FBX file to GLTF
+        convert(tempFilePath, conversionFilePath, ['-d', '--khr-materials-unlit'])
+          .then(() => {
+            // Set the content type for the response
+            res.contentType('application/octet-stream');
+  
+            // Stream the file to the response
+            const readStream = fs.createReadStream(conversionFilePath);
+            readStream.pipe(res);
+  
+            // Delete the temporary files after the response is finished
+            readStream.on('close', () => {
+              fs.unlink(tempFilePath, (err) => {
+                if (err) {
+                  console.error('Error deleting temporary file:', err);
+                } else {
+                  console.log('Temporary file deleted successfully');
+                }
+              });
+  
+              fs.unlink(conversionFilePath, (err) => {
+                if (err) {
+                  console.error('Error deleting converted file:', err);
+                } else {
+                  console.log('Converted file deleted successfully');
+                }
+              });
+            });
+          })
+          .catch((error) => {
+            console.error('Conversion failed:', error);
+            res.status(500).send('Conversion failed');
+          });
+      });
     } catch (error) {
-        console.error(error)
+      console.error(error);
+      res.status(500).send('Internal Server Error');
     }
-}
-
+  };
 
 
 const withBlender = async (req, res) => {
@@ -84,6 +119,6 @@ const objToGlbGltf = (req,res) =>{
 }
 
 module.exports = {
-    convertFBXToGLTF,
+    convertFBXToGLB,
     withBlender
 }
