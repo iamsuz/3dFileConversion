@@ -7,7 +7,7 @@ import sys
 
 # Now you can import Blender and NumPy
 import bpy
-
+import json
 bpy.ops.preferences.addon_enable(module='io_scene_gltf2')
 
 def convert_and_compress_fbx(input_file):
@@ -19,13 +19,31 @@ def convert_and_compress_fbx(input_file):
         raise FileNotFoundError("Input file does not exist: {}".format(input_file))
 
     # Import the GLTF file
-    bpy.ops.import_scene.fbx(filepath='temp.fbx')
+    bpy.ops.import_scene.fbx(filepath=input_file)
+
+    # Apply Decimate Modifier to all mesh objects
+    for obj in bpy.context.scene.objects:
+        # object_dict = vars(obj)
+        # object_json = json.dumps(obj, indent=4)  # Convert to JSON-like format with indentation
+        # print("Object details:\n", object_json)
+        if obj.type == 'MESH':
+            bpy.context.view_layer.objects.active = obj  # Set the active object
+            bpy.ops.object.modifier_add(type='DECIMATE')  # Add the Decimate Modifier
+            bpy.context.object.modifiers["Decimate"].decimate_type = 'COLLAPSE'  # Set decimation type
+            bpy.context.object.modifiers["Decimate"].ratio = 0.5  # Set the ratio
+    
+    # Switch the Decimate Modifier to Weighted Normal just before exporting
+    for obj in bpy.context.scene.objects:
+        if obj.type == 'MESH' and 'DECIMATE' in obj.modifiers:
+            decimate_modifier = obj.modifiers.get('DECIMATE')
+            if decimate_modifier:
+                print("Changing modifier to Weighted Normal for object:", obj.name)
+                decimate_modifier.type = 'WEIGHTED_NORMAL'
 
     # Create the output file path with ".gltf" extension
-    output_file = os.path.splitext(input_file)[0] + ".glb"
-
+    output_file = os.path.splitext(input_file)[0] + "_output.fbx"
     # Export the GLTF file with compression
-    bpy.ops.export_scene.gltf(filepath=output_file, export_format='GLB', export_image_format='AUTO', export_draco_mesh_compression_enable=True, export_draco_mesh_compression_level=3)
+    bpy.ops.export_scene.fbx(filepath=output_file, embed_textures=True, path_mode="COPY")
 
     # Optional: Delete temporary objects created during conversion
     bpy.ops.object.select_all(action='SELECT')
@@ -39,4 +57,4 @@ if __name__ == "__main__":
         print("Usage: python script.py input_file")
     else:
         # input_file_path = sys.argv[1]
-        convert_and_compress_fbx('temp.fbx')
+        convert_and_compress_fbx('wash_bucket.fbx')
