@@ -33,12 +33,15 @@ def convert_and_compress_fbx(input_file):
             bpy.context.object.modifiers["Decimate"].ratio = 0.5  # Set the ratio
     
     # Switch the Decimate Modifier to Weighted Normal just before exporting
+    # Switch the Decimate Modifier to Weighted Normal just before exporting
     for obj in bpy.context.scene.objects:
-        if obj.type == 'MESH' and 'DECIMATE' in obj.modifiers:
-            decimate_modifier = obj.modifiers.get('DECIMATE')
+        if obj.type == 'MESH':
+            decimate_modifier = obj.modifiers.get('Decimate')  # Use 'Decimate' instead of 'DECIMATE'
             if decimate_modifier:
-                print("Changing modifier to Weighted Normal for object:", obj.name)
-                decimate_modifier.type = 'WEIGHTED_NORMAL'
+                print("Removing Decimate Modifier and adding Weighted Normal for object:", obj.name)
+                bpy.ops.object.modifier_remove(modifier=decimate_modifier.name)
+                obj.modifiers.new(name="WeightedNormal", type='WEIGHTED_NORMAL')
+
 
     # Create the output file path with ".gltf" extension
     output_file = os.path.splitext(input_file)[0] + "_output.fbx"
