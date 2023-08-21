@@ -19,7 +19,7 @@ def convert_and_compress_fbx(input_file):
         raise FileNotFoundError("Input file does not exist: {}".format(input_file))
 
     # Import the GLTF file
-    bpy.ops.import_scene.fbx(filepath=input_file)
+    bpy.ops.import_scene.gltf(filepath=input_file,filter_glob='*.glb;*.gltf')
 
     # Apply Decimate Modifier to all mesh objects
     for obj in bpy.context.scene.objects:
@@ -34,19 +34,23 @@ def convert_and_compress_fbx(input_file):
     
     # Switch the Decimate Modifier to Weighted Normal just before exporting
     # Switch the Decimate Modifier to Weighted Normal just before exporting
-    for obj in bpy.context.scene.objects:
-        if obj.type == 'MESH':
-            decimate_modifier = obj.modifiers.get('Decimate')  # Use 'Decimate' instead of 'DECIMATE'
-            if decimate_modifier:
-                print("Removing Decimate Modifier and adding Weighted Normal for object:", obj.name)
-                bpy.ops.object.modifier_remove(modifier=decimate_modifier.name)
-                obj.modifiers.new(name="WeightedNormal", type='WEIGHTED_NORMAL')
+    #     Reason why we run a weighted normal operation is because, ideally a cylinder which is the handle shouldn't be fully smoothed like that because that will mess up
+    #  how it renders and cause weird looking artifacts on the mesh. I'm sending a render screenshot of both the mesh. It's sort of a step for fixing the bad smoothing 
+    # from clo
+    # But please do remove that if the goal is to retain the exact shading of the original mesh.
+    # for obj in bpy.context.scene.objects:
+    #     if obj.type == 'MESH':
+    #         decimate_modifier = obj.modifiers.get('Decimate')  # Use 'Decimate' instead of 'DECIMATE'
+    #         if decimate_modifier:
+    #             print("Removing Decimate Modifier and adding Weighted Normal for object:", obj.name)
+    #             bpy.ops.object.modifier_remove(modifier=decimate_modifier.name)
+    #             obj.modifiers.new(name="WeightedNormal", type='WEIGHTED_NORMAL')
 
 
     # Create the output file path with ".gltf" extension
-    output_file = os.path.splitext(input_file)[0] + "_output.fbx"
+    output_file = os.path.splitext(input_file)[0] + "_output.glb"
     # Export the GLTF file with compression
-    bpy.ops.export_scene.fbx(filepath=output_file, embed_textures=True, path_mode="COPY")
+    bpy.ops.export_scene.gltf(filepath=output_file, export_format="GLB", export_draco_mesh_compression_enable=True, export_draco_mesh_compression_level=5)
 
     # Optional: Delete temporary objects created during conversion
     bpy.ops.object.select_all(action='SELECT')
@@ -60,4 +64,4 @@ if __name__ == "__main__":
         print("Usage: python script.py input_file")
     else:
         # input_file_path = sys.argv[1]
-        convert_and_compress_fbx('wash_bucket.fbx')
+        convert_and_compress_fbx('Apparel.glb')
