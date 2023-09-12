@@ -5,6 +5,7 @@ const fs = require('fs')
 const path = require('path')
 // const { exec } = require('child_process');
 const { spawn } = require('child_process');
+const { getBuffer } = require('../functions/storage');
 // const { objToGlb, objToGltf } = require('../functions/objToGltf');
 
 const convertFBXToGLB = async (req, res) => {
@@ -77,12 +78,13 @@ const withBlender = async (req, res) => {
     console.log(req.files)
     // Assuming the ZPRJ file is uploaded via multipart/form-data
     const file = req.files.toconvert;
-    
-    console.log(file)
-    const toConvertFileContent = req.files.toconvert.data
+    const objectKey = req.body.object_key
+    // console.log(file)
+    const fileBuffer = await getBuffer(objectKey)
+    // const toConvertFileContent = req.files.toconvert.data
    // Write the file content to a temporary file
    const tempFilePath = './temp.fbx';
-   fs.writeFileSync(tempFilePath, toConvertFileContent);
+   fs.writeFileSync(tempFilePath, fileBuffer);
 
       // Define the command to execute the Blender Python script
       //if you have blender defined in your PATH variable then you can use
