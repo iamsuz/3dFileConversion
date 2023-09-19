@@ -3,6 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const axios = require('axios');
 const { getBuffer } = require('../functions/storage');
+const { triggerFileUpload } = require('../functions/queueProducer');
 
 const initialize = async (req, res) => {
     try {
@@ -44,8 +45,8 @@ const initialize = async (req, res) => {
         const code = await new Promise((resolve, reject) => {
             conversionScript.on('close', (code) => {
                 console.log({ code });
-                if (code === 0) {
-                    console.log({ compressedData });
+                if (code === 0 || code === 1) {
+                    console.log({ compressedData: compressedData.toString() });
                     resolve(code);
                 } else {
                     console.log('We are in else of the on close');
@@ -59,7 +60,7 @@ const initialize = async (req, res) => {
             });
 
             conversionScript.on('exit', (code) => {
-                if (code !== 0) {
+                if (code !== 0 && code !== 1) {
                     console.log('We are in exit');
                     reject(code);
                 }
@@ -68,6 +69,7 @@ const initialize = async (req, res) => {
 
         // Send the converted glTF file as a response
         // Assuming you want to send the compressedData as the response
+        await triggerFileUpload(`output_textures/${req.query.obj_id}`)
         res.status(200).send(compressedData);
     } catch (error) {
         console.error(error);

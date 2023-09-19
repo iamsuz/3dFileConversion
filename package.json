@@ -20,6 +20,7 @@
   },
   "homepage": "https://gitlab.com/fountaneEngineering/consutling-projects/virtu/v2-pocs/3d-conversion-compression#readme",
   "dependencies": {
+    "@bull-board/express": "^5.8.4",
     "@slynova/flydrive": "^1.0.3",
     "@slynova/flydrive-s3": "^1.0.3",
     "axios": "^1.5.0",

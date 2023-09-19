@@ -6,7 +6,8 @@ let bodyParser = require('body-parser');
 // let session = require('express-session');
 let fileUpload = require('express-fileupload');
 // require('./controller/listeners')
-const router = require('./routes')
+const router = require('./routes');
+const { serverAdapter } = require('./functions/queueProducer');
 // const { serverAdapter } = require('./functions/bullQueue');
 
 // let authFunc = require("./functions/authFunc");
@@ -50,6 +51,8 @@ app.use(
     debug: true,
   })
 );
+
+app.use('/admin', serverAdapter.getRouter());
 
 // app.use("/admin", serverAdapter.getRouter());
 app.use('/api/v1', router);
@@ -140,6 +143,6 @@ app.use(function (err, req, res, next) {
   }
 });
 
-app.listen(3020,()=>{
-    console.log('\n\n\n Compression Conversion Server is listening in port 3020 \n\n\n')
+app.listen(3020, () => {
+  console.log('\n\n\n Compression Conversion Server is listening in port 3020 \n\n\n')
 })
