@@ -1,5 +1,11 @@
 import os
 import bpy
+import sys
+import random
+import string  # Import the string module for generating random names
+
+# Get the file path from command-line arguments
+model_file_path = sys.argv[-1]
 
 # Enable the glTF 2.0 Addon
 bpy.ops.preferences.addon_enable(module='io_scene_gltf2')
@@ -21,16 +27,24 @@ def extract_and_save_material_textures(material, input_filename, output_director
             if node.type == 'TEX_IMAGE':
                 # Get the texture image
                 texture_image = node.image
+
                 # Extract the texture type (e.g., Base, Diffuse, Roughness)
-                texture_type = node.label  # Use node.label if it contains the texture type
+                # Use node.label if it contains the texture type, or generate a random name
+                texture_type = node.label if node.label else generate_random_name()
+
                 # Define the output file path
                 output_file = os.path.join(
                     material_directory, f'{texture_type}.png')
                 # Save the texture image
                 texture_image.save_render(output_file)
 
-# Function to initialize the script
 
+# Function to generate a random name for textures
+def generate_random_name():
+    return ''.join(random.choice(string.ascii_letters) for _ in range(8))
+
+
+# Function to initialize the script
 
 def initialize(input_file, output_directory):
     # Clear existing data
@@ -43,8 +57,22 @@ def initialize(input_file, output_directory):
     # Extract the filename without extension
     input_filename = os.path.splitext(os.path.basename(input_file))[0]
 
-    # Import the glTF 2.0 model
-    bpy.ops.import_scene.gltf(filepath=input_file, filter_glob='*.glb;*.gltf')
+    # Import the model based on the file format
+    if input_file.lower().endswith('.gltf') or input_file.lower().endswith('.glb'):
+        bpy.ops.import_scene.gltf(
+            filepath=input_file, filter_glob='*.glb;*.gltf')
+    elif input_file.lower().endswith('.fbx'):
+        bpy.ops.import_scene.fbx(
+            filepath=input_file)
+    elif input_file.lower().endswith('.mtl'):
+        bpy.ops.import_scene.mtl(
+            filepath=input_file)
+    elif input_file.lower().endswith('.obj'):
+        bpy.ops.import_scene.obj(
+            filepath=input_file)
+    else:
+        print(f"Unsupported file format: {input_file}")
+        return
 
     # Loop through selected objects (assumes objects are meshes)
     for obj in bpy.context.selected_objects:
@@ -61,6 +89,6 @@ def initialize(input_file, output_directory):
 
 
 # Example usage
-input_file = 'toteBag.glb'
+input_file = model_file_path
 output_directory = 'output_textures'
 initialize(input_file, output_directory)
