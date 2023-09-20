@@ -30,7 +30,7 @@ def extract_and_save_material_textures(material, input_filename, output_director
 
                 # Extract the texture type (e.g., Base, Diffuse, Roughness)
                 # Use node.label if it contains the texture type, or generate a random name
-                texture_type = node.label if node.label else generate_random_name()
+                texture_type = node.label if node.label else 'random_'+generate_random_name()
 
                 # Define the output file path
                 output_file = os.path.join(
