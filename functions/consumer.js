@@ -33,6 +33,8 @@ async function processAndQueueFilesForUpload(location) {
 
                 console.log({ filePath })
 
+
+
                 const jobData = {
                     folderId: 'folder_name', // You can set folderId as needed
                     filePath: filePath,

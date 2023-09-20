@@ -2,11 +2,13 @@ const { Queue, Worker, QueueScheduler } = require('bullmq');
 const { createBullBoard } = require('@bull-board/api');
 const { BullMQAdapter } = require('@bull-board/api/bullMQAdapter');
 const { ExpressAdapter } = require('@bull-board/express');
+const FormData = require('form-data')
 // const { processAndQueueFilesForUpload } = require('./consumer');
 
 const fs = require('fs');
 // const { fileQueue } = require('./queueProducer');
-const path = require('path')
+const path = require('path');
+const { default: axios } = require('axios');
 
 
 // Create a BullMQ queue with Redis connection details
@@ -46,14 +48,7 @@ async function triggerFileUpload(location) {
     await fileQueue.add('startUpload', controlMessage);
 }
 
-const serverAdapter = new ExpressAdapter();
 
-const bullBoard = createBullBoard({
-    queues: [new BullMQAdapter(fileQueue)],
-    serverAdapter: serverAdapter,
-});
-
-serverAdapter.setBasePath('/admin');
 
 
 // Create a BullMQ worker
@@ -66,7 +61,19 @@ const fileWorker = new Worker('fileQueue', async (job) => {
         await processAndQueueFilesForUpload(location);
     }
     if (jobData.operation === 'upload') {
-
+        /**
+         * Upload a file
+         */
+        console.log('Inside an upload')
+        console.log({ jobData })
+        const form = new FormData();
+        form.append('map', fs.createReadStream(jobData.filePath))
+        form.append('key', jobData.filePath)
+        const endpoint = 'http://127.0.0.1:3016/api/v1' + '/upload/texture'
+        console.log({ endpoint })
+        const t = await axios.post(endpoint, form)
+        console.log({ t });
+        return true
     }
 });
 
@@ -88,7 +95,7 @@ async function processAndQueueFilesForUpload(location) {
             const filePath = path.join(dir, file);
             const stat = await fs.promises.stat(filePath);
 
-            console.log({ stat })
+            // console.log({ stat })
 
             if (stat.isDirectory()) {
                 // If it's a directory, recursively read its contents
@@ -96,14 +103,14 @@ async function processAndQueueFilesForUpload(location) {
             } else {
                 // If it's a file, add it to the queue
 
-                console.log({ filePath })
+                // console.log({ filePath })
 
                 const jobData = {
                     folderId: 'folder_name', // You can set folderId as needed
                     filePath: filePath,
                     operation: 'upload',
                 };
-                console.log({ fileQueue })
+                console.log('We have added for upload with ', filePath)
                 await fileQueue.add('upload', jobData);
             }
         }
@@ -112,6 +119,15 @@ async function processAndQueueFilesForUpload(location) {
     console.log('Scanning files in location:', location);
     await readFilesRecursively(location);
 }
+
+const serverAdapter = new ExpressAdapter();
+
+const bullBoard = createBullBoard({
+    queues: [new BullMQAdapter(fileQueue)],
+    serverAdapter: serverAdapter,
+});
+
+serverAdapter.setBasePath('/admin');
 
 module.exports = {
     triggerFileUpload,
