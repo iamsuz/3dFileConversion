@@ -9,6 +9,6 @@ router.post('/convert/fbx/gltf', conversionCtrl.convertFBXToGLB)
 router.post('/convert/with-blender', conversionCtrl.withBlender)
 // router.post('/colorways', colorwaysCtrl.change);
 
-router.get('/initialize', modelCtrl.initialize)
+router.post('/initialize', modelCtrl.initialize)
 
 module.exports = router;
