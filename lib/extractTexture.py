@@ -3,6 +3,7 @@ import bpy
 import sys
 import random
 import string  # Import the string module for generating random names
+import json
 
 # Get the file path from command-line arguments
 model_file_path = sys.argv[-1]
@@ -13,14 +14,14 @@ bpy.ops.preferences.addon_enable(module='io_scene_gltf2')
 # Function to extract and save material textures
 
 
-def extract_and_save_material_textures(material, input_filename, output_directory):
+def extract_and_save_material_textures(material, input_filename, output_directory, mesh_name):
     texture_info = []
 
     # Check if the material has a node tree
     if material.node_tree:
         # Create a folder for each material under the input filename
         material_directory = os.path.join(
-            output_directory, input_filename, material.name)
+            output_directory, input_filename, mesh_name, material.name)
         os.makedirs(material_directory, exist_ok=True)
 
         # Loop through the nodes in the shader node tree
@@ -71,14 +72,14 @@ def extract_and_save_material_textures(material, input_filename, output_director
                 # Create a dictionary for texture information
                 texture_info.append({
                     "type": texture_type,
-                    "uv_orientation": uv_orientation,
-                    "uv_scale": uv_scale,
+                    "uv_orientation": [uv_orientation.x if uv_orientation else 0, uv_orientation.y if uv_orientation else 0, uv_orientation.z if hasattr(uv_orientation, 'z') else 0],
+                    "uv_scale": [uv_scale.x if uv_scale else 0, uv_scale.y if uv_scale else 0, uv_scale.z if hasattr(uv_scale, 'z') else 0],
                     "color_space": color_space,
                     "roughness_factor": roughness_factor,
                     "normal_map_strength": normal_map_strength,
-                    "mapping_location": mapping_location,
-                    "mapping_rotation": mapping_rotation,
-                    "mapping_scale": mapping_scale
+                    "mapping_location": [mapping_location.x if mapping_location else 0, mapping_location.y if mapping_location else 0, mapping_location.z if hasattr(mapping_location, 'z') else 0],
+                    "mapping_rotation": [mapping_rotation.x if mapping_rotation else 0, mapping_rotation.y if mapping_rotation else 0, mapping_rotation.z if hasattr(mapping_rotation, 'z') else 0],
+                    "mapping_scale": [mapping_scale.x if mapping_scale else 0, mapping_scale.y if mapping_scale else 0, mapping_scale.z if hasattr(mapping_scale, 'z') else 0]
                 })
 
     return texture_info
@@ -137,7 +138,7 @@ def initialize(input_file, output_directory):
                 if material:
                     # Extract and save material textures with their original names
                     texture_info = extract_and_save_material_textures(
-                        material, input_filename, output_directory)
+                        material, input_filename, output_directory, obj.name)
                     material_data.append({
                         "name": material.name,
                         "maps": texture_info
@@ -156,6 +157,18 @@ def initialize(input_file, output_directory):
 input_file = model_file_path
 output_directory = 'output_textures'
 mesh_info = initialize(input_file, output_directory)
+
+output_json_name = os.path.splitext(os.path.basename(input_file))[0]
+
+
+# Define the output file path
+output_file_path = os.path.join(
+    output_directory, output_json_name, f'{output_json_name}.json')
+
+# Serialize and write the data to a JSON file
+with open(output_file_path, 'w') as output_file:
+    json.dump(mesh_info, output_file)
+
 
 # Print or use the mesh information as needed
 print(mesh_info)

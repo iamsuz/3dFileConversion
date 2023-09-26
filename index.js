@@ -9,10 +9,12 @@ let fileUpload = require('express-fileupload');
 const router = require('./routes');
 const { serverAdapter } = require('./functions/queueProducer');
 // const { serverAdapter } = require('./functions/bullQueue');
-
+require('dotenv').config();
 // let authFunc = require("./functions/authFunc");
 // let authMiddleware = require("./middlewares/auth")
 // let config = require('./config/config');
+
+console.log(process.env.API)
 
 let app = express();
 
