@@ -22,6 +22,7 @@ def extract_and_save_material_textures(material, input_filename, output_director
         # Create a folder for each material under the input filename
         material_directory = os.path.join(
             output_directory, input_filename, mesh_name, material.name)
+
         os.makedirs(material_directory, exist_ok=True)
 
         # Loop through the nodes in the shader node tree
@@ -164,6 +165,8 @@ output_json_name = os.path.splitext(os.path.basename(input_file))[0]
 # Define the output file path
 output_file_path = os.path.join(
     output_directory, output_json_name, f'{output_json_name}.json')
+
+os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
 
 # Serialize and write the data to a JSON file
 with open(output_file_path, 'w') as output_file:

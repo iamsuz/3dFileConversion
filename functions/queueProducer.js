@@ -71,7 +71,7 @@ const extractionWorker = new Worker('extractionQueue', async (job) => {
         jobData.filePath,
     ];
 
-    const conversionScript = spawn('/Applications/Blender.app/Contents/MacOS/Blender', blenderArgs);
+    const conversionScript = spawn(process.env.BLENDER_LOCATION, blenderArgs);
 
     console.log({ conversionScript })
 

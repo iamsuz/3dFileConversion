@@ -19,6 +19,13 @@ const initialize = async (req, res) => {
         const extension = t[t.length - 1];
 
         const tempFilePath = path.join(__dirname, `../tmp/${req.body.gid}.${extension}`);
+
+        // Ensure the directory exists, create it if necessary
+        const directory = path.dirname(tempFilePath);
+        if (!fs.existsSync(directory)) {
+            fs.mkdirSync(directory, { recursive: true });
+        }
+
         fs.writeFileSync(tempFilePath, fileBuffer.content);
 
         await addExtraction({
