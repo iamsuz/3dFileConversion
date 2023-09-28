@@ -68,7 +68,13 @@ async function addExtraction(data) {
 const extractionWorker = new Worker('extractionQueue', async (job) => {
     const jobData = job.data
 
-    // console.log({ jobData })
+    console.log({ jobData })
+
+    // check if file exist and give the proper path
+    if (!fs.existsSync(jobData.filePath)) {
+        return new Error('Couldnt find requested file')
+    }
+
 
     const blenderArgs = [
         '-b',
