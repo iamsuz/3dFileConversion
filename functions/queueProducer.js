@@ -2,7 +2,7 @@ const { Queue, Worker, QueueScheduler } = require('bullmq');
 const { createBullBoard } = require('@bull-board/api');
 const { BullMQAdapter } = require('@bull-board/api/bullMQAdapter');
 const { ExpressAdapter } = require('@bull-board/express');
-const { spawn } = require('child_process');
+const { spawnSync } = require('child_process');
 const FormData = require('form-data')
 // const { processAndQueueFilesForUpload } = require('./consumer');
 
@@ -77,7 +77,7 @@ const extractionWorker = new Worker('extractionQueue', async (job) => {
         jobData.filePath,
     ];
 
-    const conversionScript = spawn(process.env.BLENDER_LOCATION, blenderArgs);
+    const conversionScript = spawnSync(process.env.BLENDER_LOCATION, blenderArgs);
 
     console.log({ conversionScript })
 
