@@ -27,6 +27,12 @@ const extractionQueue = new Queue('extractionQueue', {
     connection: connection
 })
 
+// Set the maximum number of concurrent tasks
+const maxConcurrentTasks = 1; // Adjust this number as needed
+extractionQueue.setMaxListeners(maxConcurrentTasks);
+
+fileQueue.setMaxListeners(5)
+
 // Producer function to add jobs
 async function produceJob() {
     const jobData = {
