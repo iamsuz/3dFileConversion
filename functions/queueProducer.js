@@ -77,51 +77,22 @@ const extractionWorker = new Worker('extractionQueue', async (job) => {
         jobData.filePath,
     ];
 
-    const conversionScript = spawnSync(process.env.BLENDER_LOCATION, blenderArgs);
+    // Use spawnSync to ensure the process is cleaned up properly
+    const { stdout, stderr, status } = spawnSync(process.env.BLENDER_LOCATION, blenderArgs);
 
-    console.log({ conversionScript })
-
-    let compressedData = Buffer.from('');
-
-    conversionScript.stdout.on('data', async (data) => {
-        // console.log({ data: data.toString(), compressedData: compressedData.toString() });
-        compressedData = Buffer.concat([compressedData, data]);
-        console.log({ compressedInfo: compressedData.toString() })
-        const compressedFilePath = await fs.writeFile(path.join(__dirname, '../tmp/compressed_file.obj'), compressedData, function (err) {
-            if (err) {
-                console.error(err)
-                console.log('Error while saving file')
-            }
-        });
-    });
-
-    const code = await new Promise((resolve, reject) => {
-        conversionScript.on('close', async (code) => {
-            console.log({ code });
-            if (code === 0 || code === 1) {
-                // console.log({ compressedData: compressedData.toString() });
-                await triggerFileUpload(`${jobData.outputLocation}`)
-                resolve(code);
-            } else {
-                console.log('We are in else of the on close');
-                reject(code);
-            }
-        });
-
-        conversionScript.on('error', (err) => {
-            console.log('We are in error');
-            reject(err);
-        });
-
-        conversionScript.on('exit', (code) => {
-            if (code !== 0 && code !== 1) {
-                console.log('We are in exit');
-                reject(code);
-            }
-        });
-    });
-
-    return await code
+    if (status === 0 || status === 1) {
+        // Process completed successfully, you can continue with the data
+        const compressedData = stdout;
+        // Rest of your processing logic here
+        await triggerFileUpload(`${jobData.outputLocation}`)
+        return status;
+    } else {
+        // Handle the error, log it, and return an appropriate status code
+        console.error(`Blender process failed with status ${status}`);
+        console.error(`Error output: ${stderr.toString()}`);
+        console.log({ stdout, stderr })
+        return status;
+    }
 
 })
 
