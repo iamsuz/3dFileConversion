@@ -78,23 +78,32 @@ app.use('/api/v1', router);
 // }))
 
 app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept'); // cors header
+  const allowedOrigins = ['http://localhost:3016', 'https://virtu-api.app.fountane.com', 'https://api.virtu3d.io']; // Replace with your allowed domains
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    // Allow requests from the specified origins
+    res.header('Access-Control-Allow-Origin', origin);
+  } else {
+    // Deny requests from all other origins
+    res.header('Access-Control-Allow-Origin', 'null');
+  }
+
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+
   if (req.method == 'OPTIONS') {
-    // In very simple terms, this is how you handle OPTIONS request in nodejs
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE, HEAD');
     res.header('Access-Control-Max-Age', '1728000');
     res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Headers', 'Origin,Content-Type,Accept,Authorization, X-AUTH-TOKEN, X-USER-TYPE, REQUEST-ID');
+    res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-AUTH-TOKEN, X-USER-TYPE, REQUEST-ID');
     res.header('Content-Length', '0');
     res.sendStatus(208);
   } else {
     next();
-    // Google analytics logging comes here
+    // Google Analytics logging or other middleware logic can come here
   }
-
-  //    next();
 });
+
 
 
 

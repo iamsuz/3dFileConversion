@@ -1,6 +1,6 @@
-const fs = require('fs');
+const fs = require('fs-extra')
 const path = require('path');
-
+const { v4: uuid } = require('uuid');
 const axios = require('axios');
 const { getBuffer } = require('../functions/storage');
 const { triggerFileUpload, addExtraction } = require('../functions/queueProducer');
@@ -30,9 +30,13 @@ const initialize = async (req, res) => {
 
         await addExtraction({
             filePath: tempFilePath,
-            fileId: objectKey,
+            fileObjKey: objectKey,
+            fileId: req.body.gid,
             outputLocation: `output_textures/${req.body.gid}`,
             extension: extension,
+            e_name: req.body.ename,
+            e_id: req.body.eid,
+            reqId: uuid(),
             extraction: {
                 texture: true
             }
