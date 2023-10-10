@@ -78,6 +78,8 @@ const extractionWorker = new Worker('extractionQueue', async (job) => {
         // Process completed successfully, you can continue with the data
         const compressedData = stdout;
         // Rest of your processing logic here
+        console.log({ status })
+        console.log("Extraction is complete ")
         await triggerFileUpload({ location: jobData.outputLocation, ...jobData })
         return status;
     } else {
@@ -104,7 +106,7 @@ extractionWorker.on('failed', (job, error) => {
 const fileWorker = new Worker('fileQueue', async (job) => {
 
     try {
-        const jobData = job.data;
+        let jobData = job.data;
         // console.log(job.type)
         if (jobData.operation === 'startUpload') {
             // Start the file upload process for the specified location
@@ -141,18 +143,18 @@ const fileWorker = new Worker('fileQueue', async (job) => {
                     return
                 }
             })
-
+            // console.log({ materialObj, texture })
             //Get the required texture attributes and send
 
             // const materialObj = jsonDataValues[tmpParamFile[2]]
             // console.log({ materialObj })
             const form = new FormData();
             form.append('map', fse.createReadStream(jobData.filePath))
-            form.append('key', JSON.stringify(jobData.filePath))
+            form.append('key', jobData.filePath)
             form.append('materialObj', JSON.stringify(materialObj))
             form.append("texture", JSON.stringify(texture))
-            form.append("e_name", jobData.e_name)
-            form.append("e_id", jobData.e_id)
+            form.append("e_name", jobData.eName)
+            form.append("e_id", jobData.eId)
             const endpoint = process.env.API + '/configurator/upload/texture'
             console.log({ endpoint })
             const t = await axios.post(endpoint, form)
@@ -196,9 +198,10 @@ fileWorker.on('completed', async (job) => {
         // You can trigger further processing here
         // upload the 
         const updateForm = new FormData()
-        updateForm.append('gid', jobData.fileId)
-        updateForm.append('e_name', jobData.eName)
-        updateForm.append('e_id', jobData.eId)
+        updateForm.append('gid', jobData?.fileId)
+        updateForm.append('entity_name', jobData?.eName)
+        updateForm.append('entity_id', jobData?.eId)
+        updateForm.append('request_id', jobData?.reqId)
         const statusEndpoint = process.env.API + '/configurator/update-file-status'
         // console.log({ statusEndpoint })
         const updateStatus = await axios.post(statusEndpoint, updateForm)

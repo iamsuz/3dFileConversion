@@ -36,7 +36,7 @@ const initialize = async (req, res) => {
             extension: extension,
             e_name: req.body.ename,
             e_id: req.body.eid,
-            reqId: uuid(),
+            reqId: req.body.request_id,
             extraction: {
                 texture: true
             }
