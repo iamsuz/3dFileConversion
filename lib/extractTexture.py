@@ -1,3 +1,5 @@
+# Author awesomeguy
+
 import os
 import bpy
 import sys
@@ -30,58 +32,63 @@ def extract_and_save_material_textures(material, input_filename, output_director
             # Check if the node is an Image Texture node
             if node.type == 'TEX_IMAGE':
                 # Get the texture image
-                texture_image = node.image
+                try:
+                    texture_image = node.image
 
-                # Extract the texture type (e.g., Base, Diffuse, Roughness)
-                # Use node.label if it contains the texture type, or generate a random name
-                texture_type = node.label if hasattr(
-                    node, 'label') and node.label else 'random_'+generate_random_name()
+                    # Extract the texture type (e.g., Base, Diffuse, Roughness)
+                    # Use node.label if it contains the texture type, or generate a random name
+                    texture_type = node.label if hasattr(
+                        node, 'label') and node.label else 'random_'+generate_random_name()
 
-                # Define the output file path
-                output_file = os.path.join(
-                    material_directory, f'{texture_type}.png')
+                    # Define the output file path
+                    output_file = os.path.join(
+                        material_directory, f'{texture_type}.png')
 
-                # Save the texture image
-                texture_image.save_render(output_file)
+                    # Save the texture image
+                    texture_image.save_render(output_file)
 
-                # Check if UV orientation is available
-                uv_orientation = node.uv_map if hasattr(
-                    node, 'uv_map') else None
+                    # Check if UV orientation is available
+                    uv_orientation = node.uv_map if hasattr(
+                        node, 'uv_map') else None
 
-                # Check if UV scale is available
-                uv_scale = node.scale if hasattr(node, 'scale') else None
+                    # Check if UV scale is available
+                    uv_scale = node.scale if hasattr(node, 'scale') else None
 
-                # Check if color space is available
-                color_space = node.image.colorspace_settings.name if hasattr(
-                    node.image, 'colorspace_settings') else None
+                    # Check if color space is available
+                    color_space = node.image.colorspace_settings.name if hasattr(
+                        node.image, 'colorspace_settings') else None
 
-                # Check if roughness factor is available (assuming it's a Principled BSDF node)
-                roughness_factor = node.principled_bsdf.inputs['Roughness'].default_value if hasattr(
-                    node, 'principled_bsdf') else None
+                    # Check if roughness factor is available (assuming it's a Principled BSDF node)
+                    roughness_factor = node.principled_bsdf.inputs['Roughness'].default_value if hasattr(
+                        node, 'principled_bsdf') else None
 
-                # Check if normal map strength is available (assuming it's a Principled BSDF node)
-                normal_map_strength = node.principled_bsdf.inputs['Normal'].default_value if hasattr(
-                    node, 'principled_bsdf') else None
+                    # Check if normal map strength is available (assuming it's a Principled BSDF node)
+                    normal_map_strength = node.principled_bsdf.inputs['Normal'].default_value if hasattr(
+                        node, 'principled_bsdf') else None
 
-                # Check if mapping details are available
-                mapping_location = node.location if hasattr(
-                    node, 'location') else None
-                mapping_rotation = node.rotation_euler if hasattr(
-                    node, 'rotation_euler') else None
-                mapping_scale = node.scale if hasattr(node, 'scale') else None
+                    # Check if mapping details are available
+                    mapping_location = node.location if hasattr(
+                        node, 'location') else None
+                    mapping_rotation = node.rotation_euler if hasattr(
+                        node, 'rotation_euler') else None
+                    mapping_scale = node.scale if hasattr(
+                        node, 'scale') else None
 
-                # Create a dictionary for texture information
-                texture_info.append({
-                    "type": texture_type,
-                    "uv_orientation": [uv_orientation.x if uv_orientation else 0, uv_orientation.y if uv_orientation else 0, uv_orientation.z if hasattr(uv_orientation, 'z') else 0],
-                    "uv_scale": [uv_scale.x if uv_scale else 0, uv_scale.y if uv_scale else 0, uv_scale.z if hasattr(uv_scale, 'z') else 0],
-                    "color_space": color_space,
-                    "roughness_factor": roughness_factor,
-                    "normal_map_strength": normal_map_strength,
-                    "mapping_location": [mapping_location.x if mapping_location else 0, mapping_location.y if mapping_location else 0, mapping_location.z if hasattr(mapping_location, 'z') else 0],
-                    "mapping_rotation": [mapping_rotation.x if mapping_rotation else 0, mapping_rotation.y if mapping_rotation else 0, mapping_rotation.z if hasattr(mapping_rotation, 'z') else 0],
-                    "mapping_scale": [mapping_scale.x if mapping_scale else 0, mapping_scale.y if mapping_scale else 0, mapping_scale.z if hasattr(mapping_scale, 'z') else 0]
-                })
+                    # Create a dictionary for texture information
+                    texture_info.append({
+                        "type": texture_type,
+                        "uv_orientation": [uv_orientation.x if uv_orientation else 0, uv_orientation.y if uv_orientation else 0, uv_orientation.z if hasattr(uv_orientation, 'z') else 0],
+                        "uv_scale": [uv_scale.x if uv_scale else 0, uv_scale.y if uv_scale else 0, uv_scale.z if hasattr(uv_scale, 'z') else 0],
+                        "color_space": color_space,
+                        "roughness_factor": roughness_factor,
+                        "normal_map_strength": normal_map_strength,
+                        "mapping_location": [mapping_location.x if mapping_location else 0, mapping_location.y if mapping_location else 0, mapping_location.z if hasattr(mapping_location, 'z') else 0],
+                        "mapping_rotation": [mapping_rotation.x if mapping_rotation else 0, mapping_rotation.y if mapping_rotation else 0, mapping_rotation.z if hasattr(mapping_rotation, 'z') else 0],
+                        "mapping_scale": [mapping_scale.x if mapping_scale else 0, mapping_scale.y if mapping_scale else 0, mapping_scale.z if hasattr(mapping_scale, 'z') else 0]
+                    })
+                except RuntimeError as e:
+                    print(f"Error while processing texture: {e}")
+                    continue  # Skip this texture and continue with the next one
 
     return texture_info
 

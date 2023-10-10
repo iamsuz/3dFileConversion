@@ -3,3 +3,5 @@ testing/
 secret.yaml
 .env*
 !.env.example
+tmp/
+output_textures/

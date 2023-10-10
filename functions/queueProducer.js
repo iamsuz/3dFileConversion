@@ -151,6 +151,8 @@ const fileWorker = new Worker('fileQueue', async (job) => {
             form.append('key', JSON.stringify(jobData.filePath))
             form.append('materialObj', JSON.stringify(materialObj))
             form.append("texture", JSON.stringify(texture))
+            form.append("e_name", jobData.e_name)
+            form.append("e_id", jobData.e_id)
             const endpoint = process.env.API + '/configurator/upload/texture'
             console.log({ endpoint })
             const t = await axios.post(endpoint, form)
