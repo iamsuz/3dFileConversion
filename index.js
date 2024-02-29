@@ -78,7 +78,7 @@ app.use('/api/v1', router);
 // }))
 
 app.use(function (req, res, next) {
-  const allowedOrigins = ['http://localhost:3016', 'https://virtu-api.app.fountane.com', 'https://api.virtu3d.io']; // Replace with your allowed domains
+  const allowedOrigins = ['http://localhost:3000', 'https://virtu-api.app.fountane.com', 'https://api.virtu3d.io', 'http://localhost:3020']; // Replace with your allowed domains
   const origin = req.headers.origin;
 
   if (allowedOrigins.includes(origin)) {
@@ -89,7 +89,7 @@ app.use(function (req, res, next) {
     res.header('Access-Control-Allow-Origin', 'null');
   }
 
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, Accept, Authorization, X-AUTH-TOKEN, X-USER-TYPE, REQUEST-ID');
 
   if (req.method == 'OPTIONS') {
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE, HEAD');

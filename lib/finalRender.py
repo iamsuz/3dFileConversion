@@ -2,9 +2,11 @@ import bpy
 import os
 import datetime
 import math
+import sys
 
 # Clear existing scene data
 bpy.ops.wm.read_factory_settings(use_empty=True)
+
 
 # Set up rendering parameters
 scene = bpy.context.scene
@@ -34,26 +36,29 @@ light = bpy.context.object
 light.data.energy = 10
 light.data.angle = 1.5708
 
+
 # Original camera location and rotation (replace with extracted values from Three.js)
-cam_location = (1.6, 3.6, 2.2)
-cam_rotation = (-0.07, 0.65, 0.06)
+cam_location = (-1.454488614458153, 1.452703982954975, 0.38043314315825655)
+cam_rotation = (0.201895146016, -0.13, 0.544)
 
 # Add camera with extracted position and rotation
 bpy.ops.object.camera_add(location=cam_location, rotation=cam_rotation)
 camera = bpy.context.object
 scene.camera = camera
 
+
+# Adjust camera settings based on frustum rectangle dimensions (replace with extracted values from Three.js)
+frustum_width = 20  # Example value, replace with actual frustum width from Three.js
+frustum_height = 20  # Example value, replace with actual frustum height from Three.js
+
+# camera.data.sensor_width = frustum_width
+# camera.data.sensor_height = frustum_height
+
 # Add Track To constraint to make the camera always face the model
 track_to_constraint = camera.constraints.new(type='TRACK_TO')
 track_to_constraint.target = bpy.data.objects["Graphic tote bag BG6970298SK-3_Scene_Node"]
 track_to_constraint.track_axis = 'TRACK_NEGATIVE_Z'
 track_to_constraint.up_axis = 'UP_Y'
-
-# Adjust camera settings based on frustum rectangle dimensions (replace with extracted values from Three.js)
-# Example value, replace with actual frustum rectangle dimensions
-camera.data.sensor_width = 3.2
-# Example value, replace with actual frustum rectangle dimensions
-camera.data.sensor_height = 1.8
 
 # Set rendering output path
 now = datetime.datetime.now()
